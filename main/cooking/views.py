@@ -1,18 +1,15 @@
-from rest_framework.mixins import ListModelMixin, UpdateModelMixin
+from rest_framework import mixins,viewsets
 from rest_framework.generics import ListAPIView
-from main.cooking.models import Dish
-from main.cooking.serializers import DishSerializer
+from .models import Dish
+from .serializers import DishSerializer
 
-class DishViewSet(ListModelMixin, UpdateModelMixin):
-    starred_dishes = Dish.objects.filter(starred=True)
-    serializer = DishSerializer(starred_dishes, many=True)
-    queryset = starred_dishes
+class DishViewSet(mixins.ListModelMixin,
+                  mixins.UpdateModelMixin,
+                  viewsets.GenericViewSet):
+    serializer_class = DishSerializer
 
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)  
-    
-    def put(self, request, *args, **kwargs):
-        return self.update(request, *args, **kwargs)
+    def get_queryset(self):
+        return Dish.objects.filter(starred=True)
     
 class AllDishListView(ListAPIView):
     queryset = Dish.objects.all()
@@ -35,7 +32,7 @@ class PossibleDishesListView(ListAPIView):
     pagination_class = None  # Disable pagination to return all results
 
     def get_queryset(self):
-        ingredients = self.request('ingredients')
+        ingredients = self.request.ingredients
         if not ingredients:
             return Dish.objects.none()
         

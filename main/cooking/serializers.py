@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from main.cooking.models import Dish, Ingredient, DishIngredient
+from .models import Dish, Ingredient, DishIngredient
 
 class IngredientSerializer(serializers.ModelSerializer):
     class Meta:
@@ -18,4 +18,4 @@ class DishSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Dish
-        fields = ['id', 'title', 'description', 'instructions', 'ingredients']
+        fields = ['id', 'title', 'description', 'instructions', 'ingredients','starred']
