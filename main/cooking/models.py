@@ -1,4 +1,7 @@
 from django.db import models
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
+from django_elasticsearch_dsl.registries import registry
 
 class Dish(models.Model):
     title = models.CharField(max_length=200)
@@ -30,3 +33,16 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
+    
+@receiver(post_save, sender=Dish)
+def update_dish_index(sender, instance, **kwargs):
+    registry.update(instance)
+
+@receiver(post_save, sender=Ingredient)
+def update_ingredient_index(sender, instance, **kwargs):
+    for dish_ingredient in instance.dishingredient_set.all():
+        registry.update(dish_ingredient.dish)
+
+@receiver(post_delete, sender=Dish)
+def delete_dish_index(sender, instance, **kwargs):
+    registry.delete(instance)

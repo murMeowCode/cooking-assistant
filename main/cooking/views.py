@@ -1,16 +1,18 @@
-from rest_framework import mixins,viewsets
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, UpdateAPIView
+from .documents import DishDocument
 from .models import Dish
 from .serializers import DishSerializer
+from django.db.models import Count, Case, When, IntegerField, F
+from elasticsearch_dsl import Q
 
-class DishViewSet(mixins.ListModelMixin,
-                  mixins.UpdateModelMixin,
-                  viewsets.GenericViewSet):
-    serializer_class = DishSerializer
+class StarredDishView(ListAPIView):
+    queryset = Dish.objects.filter(starred=True)
+    serialzier_class = DishSerializer
 
-    def get_queryset(self):
-        return Dish.objects.filter(starred=True)
-    
+class StarredUpdateView(UpdateAPIView):
+    queryset = Dish.objects.all()
+    lookup_field = 'pk'
+
 class AllDishListView(ListAPIView):
     queryset = Dish.objects.all()
     serializer_class = DishSerializer
@@ -27,20 +29,45 @@ class AllDishListView(ListAPIView):
             queryset = queryset.filter(category__name=category)
         return queryset
     
+
+
 class PossibleDishesListView(ListAPIView):
     serializer_class = DishSerializer
-    pagination_class = None  # Disable pagination to return all results
-
     def get_queryset(self):
-        ingredients = self.request.ingredients
-        if not ingredients:
+        user_ingredients = self.request.data.get('ingredients', [])
+        willing_to_buy = self.request.data.get('willing_to_buy', False)
+        
+        if not user_ingredients:
             return Dish.objects.none()
         
-        dishes = Dish.objects.all()
-        possible_dishes = []
-        for dish in dishes:
-            dish_ingredients = dish.dishingredient_set.all()
-            if all(any(ing.name == ingredient for ing in dish_ingredients.values_list('ingredient__name', flat=True)) for ingredient in ingredients):
-                possible_dishes.append(dish)
+        search = DishDocument.search()
         
-        return possible_dishes
+        # Поиск всех рецептов, содержащих пользовательские ингредиенты
+        query = Q(
+            'nested', 
+            path='ingredients',
+            query=Q('terms', ingredients__name=user_ingredients)
+        )
+        search = search.query(query)
+        
+        response = search.execute()
+        dish_ids = [int(hit.meta.id) for hit in response.hits]
+        
+        # Аннотируем количество совпадающих ингредиентов
+        dishes = Dish.objects.filter(id__in=dish_ids).annotate(
+            matching_ingredients_count=Count(
+                Case(
+                    When(dishingredient__ingredient__name__in=user_ingredients, then=1),
+                    output_field=IntegerField(),
+                )
+            ),
+            total_ingredients_count=Count('dishingredient')
+        )
+        
+        if willing_to_buy:
+            # Сортируем по количеству совпадений (убывание)
+            return dishes.order_by('-matching_ingredients_count')
+        else:
+            # Только полностью совпадающие рецепты
+            return dishes.filter(matching_ingredients_count=F('total_ingredients_count'))
+    
