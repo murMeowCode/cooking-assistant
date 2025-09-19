@@ -46,7 +46,7 @@ class PossibleDishesListView(ListAPIView):
         query = Q(
             'nested', 
             path='ingredients',
-            query=Q('terms', ingredients__name=user_ingredients)
+            query=Q('terms', ingredients__id=user_ingredients)
         )
         search = search.query(query)
         
@@ -57,7 +57,7 @@ class PossibleDishesListView(ListAPIView):
         dishes = Dish.objects.filter(id__in=dish_ids).annotate(
             matching_ingredients_count=Count(
                 Case(
-                    When(dishingredient__ingredient__name__in=user_ingredients, then=1),
+                    When(dishingredient__ingredient__id__in=user_ingredients, then=1),
                     output_field=IntegerField(),
                 )
             ),
