@@ -10,6 +10,7 @@ class Dish(models.Model):
     cooktime = models.IntegerField(help_text="Cook time in minutes", null=True, blank=True)
     category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True, blank=True)
     starred = models.BooleanField(default=False)
+    photo = models.ImageField()
 
     def __str__(self):
         return self.title 
