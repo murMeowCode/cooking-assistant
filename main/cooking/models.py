@@ -11,8 +11,8 @@ class Dish(models.Model):
     category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True, blank=True)
     type = models.ForeignKey('Type', on_delete=models.SET_NULL, null=True, blank=True)
     starred = models.BooleanField(default=False)
-    photo = models.ImageField()
-    video = models.CharField(max_length=300)
+    photo = models.ImageField(null=True)
+    video = models.CharField(max_length=300,null=True)
 
     def __str__(self):
         return self.title 
