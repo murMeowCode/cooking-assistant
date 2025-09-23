@@ -7,6 +7,7 @@ from django.db.models import Count, F, Q
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.renderers import JSONRenderer
 
 class CustomPagination(PageNumberPagination):
     page_size = 10
@@ -33,6 +34,7 @@ class StarredUpdateView(UpdateAPIView):
 class AllDishListView(ListAPIView):
     queryset = Dish.objects.all()
     serializer_class = DishSerializer
+    renderer_classes = [JSONRenderer]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     
     # Фильтрация по точным значениям
