@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
@@ -45,13 +46,8 @@ class Category(models.Model):
     
 @receiver(post_save, sender=Dish)
 def update_dish_index(sender, instance, **kwargs):
-    registry.update(instance)
-
-@receiver(post_save, sender=Ingredient)
-def update_ingredient_index(sender, instance, **kwargs):
-    for dish_ingredient in instance.dishingredient_set.all():
-        registry.update(dish_ingredient.dish)
-
-@receiver(post_delete, sender=Dish)
-def delete_dish_index(sender, instance, **kwargs):
-    registry.delete(instance)
+    try:
+        registry.update(instance)
+    except:
+        if settings.DEBUG:
+            print("Elasticsearch недоступен, пропускаем индексацию")

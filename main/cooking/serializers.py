@@ -1,6 +1,11 @@
 from rest_framework import serializers
 from .models import Dish, Ingredient, DishIngredient
 
+class DishUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Dish
+        fields = ['id','starred']
+
 class IngredientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ingredient
@@ -13,7 +18,7 @@ class DishIngredientSerializer(serializers.ModelSerializer):
         model = DishIngredient
         fields = ['id', 'ingredient', 'quantity']
 
-class DishSerializer(serializers.ModelSerializer):
+class ElasticDishSerializer(serializers.ModelSerializer):
     match_percentage = serializers.SerializerMethodField()
     missing_ingredients = serializers.SerializerMethodField()
     
@@ -31,3 +36,14 @@ class DishSerializer(serializers.ModelSerializer):
         user_ingredients = self.context.get('user_ingredients', [])
         dish_ingredients = obj.dishingredient_set.values_list('ingredient__name', flat=True)
         return list(set(dish_ingredients) - set(user_ingredients))
+    
+class DishSerializer(serializers.ModelSerializer):
+    category_name = serializers.CharField(source='category.name', read_only=True)
+    type_name = serializers.CharField(source='type.name', read_only=True)
+    
+    class Meta:
+        model = Dish
+        fields = [
+            'id', 'title', 'description', 'instructions', 'cooktime', 
+            'starred', 'photo', 'video','category_name', 'type_name'
+        ]
