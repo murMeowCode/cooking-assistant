@@ -46,13 +46,8 @@ class PossibleDishesListView(APIView):
         if not user_ingredients:
             return self.get_paginated_response([])
         
-        # Поиск всех рецептов, содержащих пользовательские ингредиенты
-        dishes_with_ingredients = Dish.objects.filter(
-            dishingredient__ingredient_id__in=user_ingredients
-        ).distinct()
-        
-        # ПРАВИЛЬНЫЙ подсчет совпадающих ингредиентов
-        dishes = dishes_with_ingredients.annotate(
+        # Аннотируем все блюда с количеством совпадающих ингредиентов
+        dishes = Dish.objects.annotate(
             matching_ingredients_count=Count(
                 'dishingredient__ingredient_id',
                 filter=Q(dishingredient__ingredient_id__in=user_ingredients),
@@ -62,9 +57,13 @@ class PossibleDishesListView(APIView):
         )
         
         if willing_to_buy:
+            # При willing_to_buy=True: показываем все блюда, где есть ХОТЯ БЫ ОДИН совпадающий ингредиент
+            dishes = dishes.filter(matching_ingredients_count__gte=1)
             dishes = dishes.order_by('-matching_ingredients_count', 'title')
         else:
+            # При willing_to_buy=False: показываем только блюда, которые можно приготовить ПОЛНОСТЬЮ
             dishes = dishes.filter(matching_ingredients_count=F('total_ingredients_count'))
+            dishes = dishes.order_by('title')
         
         # Пагинация
         paginator = self.pagination_class()

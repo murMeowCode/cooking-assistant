@@ -33,23 +33,42 @@ class ElasticDishSerializer(serializers.ModelSerializer):
         ]
     
     def get_match_percentage(self, obj):
-        if hasattr(obj, 'matching_ingredients_count') and hasattr(obj, 'total_ingredients_count'):
-            if obj.total_ingredients_count > 0:
-                return (obj.matching_ingredients_count / obj.total_ingredients_count) * 100
+        # ПРАВИЛЬНЫЙ расчет процента совпадения
+        if hasattr(obj, 'total_ingredients_count') and obj.total_ingredients_count > 0:
+            return round((obj.matching_ingredients_count / obj.total_ingredients_count) * 100, 1)
         return 0
     
     def get_missing_ingredients(self, obj):
         user_ingredients = self.context.get('user_ingredients', [])
-        dish_ingredients = obj.dishingredient_set.values_list('ingredient__name', flat=True)
-        return list(set(dish_ingredients) - set(user_ingredients))
+        # Получаем все ингредиенты блюда
+        dish_ingredients = obj.dishingredient_set.select_related('ingredient').all()
+        
+        missing = []
+        for dish_ingredient in dish_ingredients:
+            if dish_ingredient.ingredient.id not in user_ingredients:
+                missing.append(dish_ingredient.ingredient.name)
+        
+        return missing
     
 class DishSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source='category.name', read_only=True)
     type_name = serializers.CharField(source='type.name', read_only=True)
-    
+    ingredients = serializers.SerializerMethodField()
+
     class Meta:
         model = Dish
         fields = [
             'id', 'title', 'description', 'instructions', 'cooktime', 
-            'starred', 'photo', 'video','category_name', 'type_name'
+            'starred', 'photo', 'video','category_name', 'type_name',
+            'ingredients'
         ]
+
+    def get_ingredients(self, obj):
+        # Получаем все ингредиенты блюда
+        dish_ingredients = obj.dishingredient_set.select_related('ingredient').all()
+        
+        ingredients = []
+        for dish_ingredient in dish_ingredients:
+            ingredients.append(dish_ingredient.ingredient.name)
+        
+        return ingredients
