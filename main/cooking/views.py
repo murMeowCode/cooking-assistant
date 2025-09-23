@@ -1,9 +1,16 @@
 from rest_framework.generics import ListAPIView, UpdateAPIView
-from .documents import DishDocument
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
 from .models import Dish
 from .serializers import DishSerializer, DishUpdateSerializer, ElasticDishSerializer
-from django.db.models import Count, Case, When, IntegerField, F
-from elasticsearch_dsl import Q
+from django.db.models import Count, Case, When, IntegerField, F, Q
+from rest_framework.pagination import PageNumberPagination
+
+class CustomPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 10
 
 class StarredDishView(ListAPIView):
     queryset = Dish.objects.filter(starred=True)
@@ -30,43 +37,52 @@ class AllDishListView(ListAPIView):
         return queryset
     
 
-class PossibleDishesListView(ListAPIView):
-    serializer_class = ElasticDishSerializer
-    def get_queryset(self):
-        user_ingredients = self.request.data.get('ingredients', [])
-        willing_to_buy = self.request.data.get('willing_to_buy', False)
+class PossibleDishesListView(APIView):
+    pagination_class = CustomPagination
+    
+    def post(self, request):
+        user_ingredients = request.data.get('ingredients', [])
+        willing_to_buy = request.data.get('willing_to_buy', False)
         
         if not user_ingredients:
-            return Dish.objects.none()
-        
-        search = DishDocument.search()
+            return self.get_paginated_response([])
         
         # Поиск всех рецептов, содержащих пользовательские ингредиенты
-        query = Q(
-            'nested', 
-            path='ingredients',
-            query=Q('terms', ingredients__id=user_ingredients)
-        )
-        search = search.query(query)
+        dishes_with_ingredients = Dish.objects.filter(
+            dishingredient__ingredient_id__in=user_ingredients
+        ).distinct()
         
-        response = search.execute()
-        dish_ids = [int(hit.meta.id) for hit in response.hits]
-        
-        # Аннотируем количество совпадающих ингредиентов
-        dishes = Dish.objects.filter(id__in=dish_ids).annotate(
+        # ПРАВИЛЬНЫЙ подсчет совпадающих ингредиентов
+        dishes = dishes_with_ingredients.annotate(
             matching_ingredients_count=Count(
-                Case(
-                    When(dishingredient__ingredient__id__in=user_ingredients, then=1),
-                    output_field=IntegerField(),
-                )
+                'dishingredient__ingredient_id',
+                filter=Q(dishingredient__ingredient_id__in=user_ingredients),
+                distinct=True
             ),
-            total_ingredients_count=Count('dishingredient')
+            total_ingredients_count=Count('dishingredient__ingredient_id', distinct=True)
         )
         
         if willing_to_buy:
-            # Сортируем по количеству совпадений (убывание)
-            return dishes.order_by('-matching_ingredients_count')
+            dishes = dishes.order_by('-matching_ingredients_count', 'title')
         else:
-            # Только полностью совпадающие рецепты
-            return dishes.filter(matching_ingredients_count=F('total_ingredients_count'))
+            dishes = dishes.filter(matching_ingredients_count=F('total_ingredients_count'))
+        
+        # Пагинация
+        paginator = self.pagination_class()
+        page = paginator.paginate_queryset(dishes, request, view=self)
+        
+        serializer = ElasticDishSerializer(
+            page, 
+            many=True,
+            context={'user_ingredients': user_ingredients}
+        )
+        
+        return paginator.get_paginated_response(serializer.data)
     
+    def get_paginated_response(self, data):
+        return Response({
+            'count': 0,
+            'next': None,
+            'previous': None,
+            'results': data
+        })

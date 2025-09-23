@@ -21,10 +21,16 @@ class DishIngredientSerializer(serializers.ModelSerializer):
 class ElasticDishSerializer(serializers.ModelSerializer):
     match_percentage = serializers.SerializerMethodField()
     missing_ingredients = serializers.SerializerMethodField()
+    category_name = serializers.CharField(source='category.name', read_only=True)
+    type_name = serializers.CharField(source='type.name', read_only=True)
     
     class Meta:
         model = Dish
-        fields = '__all__'
+        fields = [
+            'id', 'title', 'description', 'instructions', 'cooktime', 
+            'starred', 'photo', 'video','category_name', 'type_name',
+            'match_percentage','missing_ingredients'
+        ]
     
     def get_match_percentage(self, obj):
         if hasattr(obj, 'matching_ingredients_count') and hasattr(obj, 'total_ingredients_count'):
