@@ -1,10 +1,9 @@
 from rest_framework.generics import ListAPIView, UpdateAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
 from .models import Dish
 from .serializers import DishSerializer, DishUpdateSerializer, ElasticDishSerializer
-from django.db.models import Count, Case, When, IntegerField, F, Q
+from django.db.models import Count, F, Q
 from rest_framework.pagination import PageNumberPagination
 
 class CustomPagination(PageNumberPagination):
