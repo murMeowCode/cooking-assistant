@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gusto - Кулинарные рецепты</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        :root {
+            --primary: #4A6CF7;
+            --primary-light: #6A8AFF;
+            --primary-dark: #3A5CE5;
+            --bg: #F9F9F9;
+            --card: #FFFFFF;
+            --text: #333333;
+            --text-light: #666666;
+            --border: #E0E0E0;
+            --border-light: #F0F0F0;
+            --accent: #FF6B6B;
+            --success: #4CAF50;
+            --warning: #FF9800;
+            --shadow: 0 2px 15px rgba(0,0,0,0.08);
+            --shadow-hover: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            background: var(--card);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            font-size: 1.8rem;
+        }
+
+        nav {
+            display: flex;
+            gap: 2rem;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 500;
+            padding: 0.7rem 1.5rem;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        nav a.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        nav a:not(.active):hover {
+            background: var(--bg);
+            color: var(--primary);
+        }
+
+        /* Hero Section - Improved Design */
+        .hero {
+            text-align: center;
+            padding: 4rem 0 3rem;
+            background: linear-gradient(135deg, #4A6CF7 0%, #6A8AFF 50%, #8CABFF 100%);
+            color: white;
+            margin-bottom: 2rem;
+            border-radius: 0 0 30px 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" opacity="0.1"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="white"/><circle cx="20" cy="20" r="0.5" fill="white"/><circle cx="80" cy="80" r="0.7" fill="white"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            background: linear-gradient(45deg, #FFFFFF, #F0F4FF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            opacity: 0.95;
+            max-width: 600px;
+            margin: 0 auto 2rem;
+            font-weight: 300;
+        }
+
+        /* Filters Section - Improved */
+        .filters-section {
+            background: var(--card);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-light);
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .filter-label {
+            font-weight: 600;
+            color: var(--text);
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-label i {
+            color: var(--primary);
+        }
+
+        /* Dropdown Styles */
+        .dropdown {
+            position: relative;
+            width: 100%;
+        }
+
+        .dropdown-select {
+            width: 100%;
+            padding: 1rem 1.2rem;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            background: var(--card);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dropdown-select:hover {
+            border-color: var(--primary-light);
+        }
+
+        .dropdown-select.active {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.1);
+        }
+
+        .dropdown-options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--card);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            margin-top: 0.5rem;
+            box-shadow: var(--shadow-hover);
+            z-index: 10;
+            display: none;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .dropdown-options.show {
+            display: block;
+        }
+
+        .dropdown-option {
+            padding: 1rem 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .dropdown-option:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-option:hover {
+            background: var(--bg);
+            color: var(--primary);
+        }
+
+        /* Search Input with Autocomplete */
+        .search-input-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 1rem 1.2rem 1rem 3rem;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: var(--card);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+        }
+
+        .autocomplete-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--card);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            margin-top: 0.5rem;
+            box-shadow: var(--shadow-hover);
+            z-index: 10;
+            display: none;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .autocomplete-results.show {
+            display: block;
+        }
+
+        .autocomplete-result {
+            padding: 1rem 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .autocomplete-result:last-child {
+            border-bottom: none;
+        }
+
+        .autocomplete-result:hover {
+            background: var(--bg);
+            color: var(--primary);
+        }
+
+        /* Ingredients Section - Improved */
+        .ingredients-section {
+            background: var(--bg);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 2px dashed var(--border);
+        }
+
+        .ingredients-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1rem;
+            gap: 1rem;
+        }
+
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: var(--card);
+            padding: 0.8rem 1.2rem;
+            border-radius: 12px;
+            border: 2px solid var(--border);
+        }
+
+        .toggle-label {
+            font-weight: 600;
+            color: var(--text);
+            white-space: nowrap;
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: var(--success);
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+
+        .selected-ingredients {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .ingredient-tag {
+            background: var(--primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .remove-ingredient {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 0;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Recipe Grid */
+        .recipes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .recipe-card {
+            background: var(--card);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid var(--border-light);
+        }
+
+        .recipe-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--primary-light);
+        }
+
+        .recipe-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .recipe-card:hover .recipe-image {
+            transform: scale(1.05);
+        }
+
+        .recipe-content {
+            padding: 1.5rem;
+        }
+
+        .recipe-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.8rem;
+        }
+
+        .recipe-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+
+        .favorite-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-light);
+            transition: all 0.3s ease;
+            padding: 0.5rem;
+            border-radius: 50%;
+        }
+
+        .favorite-btn:hover {
+            background: var(--bg);
+        }
+
+        .favorite-btn.active {
+            color: var(--accent);
+            animation: heartBeat 0.6s ease;
+        }
+
+        @keyframes heartBeat {
+            0% { transform: scale(1); }
+            25% { transform: scale(1.3); }
+            50% { transform: scale(0.9); }
+            75% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .recipe-meta {
+            display: flex;
+            gap: 1rem;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .recipe-description {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-light);
+            grid-column: 1 / -1;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            nav {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .recipes-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .ingredients-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon">👨‍🍳</span>
+                    Gusto
+                </div>
+                <nav>
+                    <a href="#" class="active">Все рецепты</a>
+                    <a href="#">Избранное</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Откройте мир вкуса</h1>
+                <p>Более 1000 проверенных рецептов для каждого дня. Готовьте с удовольствием!</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="container">
+        <section class="filters-section">
+            <div class="filters-grid">
+                <!-- Категории - Выпадающий список -->
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i>📁</i> Категория
+                    </label>
+                    <div class="dropdown" id="categoryDropdown">
+                        <div class="dropdown-select" id="categorySelect">
+                            <span>Все категории</span>
+                            <span>▼</span>
+                        </div>
+                        <div class="dropdown-options" id="categoryOptions">
+                            <div class="dropdown-option" data-value="all">Все категории</div>
+                            <div class="dropdown-option" data-value="salads">Салаты</div>
+                            <div class="dropdown-option" data-value="soups">Супы</div>
+                            <div class="dropdown-option" data-value="main">Основные блюда</div>
+                            <div class="dropdown-option" data-value="desserts">Десерты</div>
+                            <div class="dropdown-option" data-value="drinks">Напитки</div>
+                            <div class="dropdown-option" data-value="breakfast">Завтраки</div>
+                            <div class="dropdown-option" data-value="bakery">Выпечка</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Кухня - Поле ввода с автодополнением -->
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i>🌍</i> Кухня
+                    </label>
+                    <div class="search-input-container">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" class="search-input" id="cuisineInput" placeholder="Например, итальянская...">
+                        <div class="autocomplete-results" id="cuisineResults"></div>
+                    </div>
+                </div>
+
+                <!-- Время приготовления -->
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i>⏱</i> Время
+                    </label>
+                    <div class="dropdown" id="timeDropdown">
+                        <div class="dropdown-select" id="timeSelect">
+                            <span>Любое время</span>
+                            <span>▼</span>
+                        </div>
+                        <div class="dropdown-options" id="timeOptions">
+                            <div class="dropdown-option" data-value="all">Любое время</div>
+                            <div class="dropdown-option" data-value="quick">До 30 минут</div>
+                            <div class="dropdown-option" data-value="medium">30-60 минут</div>
+                            <div class="dropdown-option" data-value="long">Более часа</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Секция ингредиентов -->
+            <div class="ingredients-section">
+                <div class="ingredients-header">
+                    <div class="toggle-group">
+                        <span class="toggle-label">У меня есть ингредиенты:</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="ingredientsToggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="search-input-container" style="flex: 1;">
+                        <span class="search-icon">➕</span>
+                        <input type="text" class="search-input" id="ingredientsInput" placeholder="Добавьте ингредиенты...">
+                        <div class="autocomplete-results" id="ingredientsResults"></div>
+                    </div>
+                </div>
+                
+                <div class="selected-ingredients" id="selectedIngredients">
+                    <!-- Выбранные ингредиенты будут здесь -->
+                </div>
+            </div>
+        </section>
+
+        <section class="recipes-grid" id="recipesGrid">
+            <!-- Карточки рецептов будут сгенерированы JavaScript -->
+        </section>
+    </div>
+
+    <script>
+        // Данные рецептов
+        const recipes = [
+            {
+                id: 1,
+                title: "Цезарь с курицей",
+                image: "https://images.unsplash.com/photo-1546793665-c74683f339c1?w=400",
+                description: "Классический салат Цезарь с хрустящими крутонами и соусом по традиционному рецепту.",
+                time: "25 мин",
+                category: "salads",
+                cuisine: "итальянская",
+                difficulty: "Легко",
+                ingredients: ["Куриная грудка", "Салат романо", "Пармезан", "Чеснок", "Крутоны", "Соус цезарь"],
+                isFavorite: false
+            },
+            {
+                id: 2,
+                title: "Борщ украинский",
+                image: "https://images.unsplash.com/photo-1585937421617-70dfc12f8d6c?w=400",
+                description: "Наваристый борщ с говядиной и свеклой, подается со сметаной и зеленью.",
+                time: "120 мин",
+                category: "soups",
+                cuisine: "украинская",
+                difficulty: "Средне",
+                ingredients: ["Говядина", "Свекла", "Капуста", "Картофель", "Сметана", "Укроп"],
+                isFavorite: true
+            },
+            {
+                id: 3,
+                title: "Паста Карбонара",
+                image: "https://images.unsplash.com/photo-1621996346565-e3dbc353d2e5?w=400",
+                description: "Итальянская паста с панчеттой, сыром пармезан и соусом на основе яиц.",
+                time: "30 мин",
+                category: "main",
+                cuisine: "итальянская",
+                difficulty: "Средне",
+                ingredients: ["Спагетти", "Панчетта", "Пармезан", "Яйца", "Черный перец"],
+                isFavorite: false
+            },
+            {
+                id: 4,
+                title: "Тирамису",
+                image: "https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=400",
+                description: "Итальянский десерт с печеньем савоярди, кофе и кремом из маскарпоне.",
+                time: "45 мин",
+                category: "desserts",
+                cuisine: "итальянская",
+                difficulty: "Сложно",
+                ingredients: ["Маскарпоне", "Савоярди", "Кофе", "Какао", "Яйца", "Сахар"],
+                isFavorite: true
+            },
+            {
+                id: 5,
+                title: "Мохито безалкогольный",
+                image: "https://images.unsplash.com/photo-1536935338788-846bb9981813?w=400",
+                description: "Освежающий коктейль с лаймом, мятой и газированной водой.",
+                time: "5 мин",
+                category: "drinks",
+                cuisine: "кубинская",
+                difficulty: "Легко",
+                ingredients: ["Лайм", "Мята", "Содовая", "Сахар", "Лед"],
+                isFavorite: false
+            },
+            {
+                id: 6,
+                title: "Сырники с малиной",
+                image: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400",
+                description: "Нежные сырники из творога, подаются с свежей малиной и сметаной.",
+                time: "35 мин",
+                category: "breakfast",
+                cuisine: "русская",
+                difficulty: "Легко",
+                ingredients: ["Творог", "Яйца", "Мука", "Сахар", "Малина", "Сметана"],
+                isFavorite: false
+            }
+        ];
+
+        // Данные для автодополнения
+        const cuisines = ["итальянская", "русская", "украинская", "французская", "японская", "китайская", "мексиканская", "индийская", "грузинская", "кубинская"];
+        const allIngredients = [...new Set(recipes.flatMap(recipe => recipe.ingredients))];
+
+        let currentFilters = {
+            category: 'all',
+            cuisine: '',
+            time: 'all',
+            ingredients: [],
+            hasIngredients: false
+        };
+
+        let selectedIngredients = [];
+
+        // Инициализация приложения
+        document.addEventListener('DOMContentLoaded', function() {
+            renderRecipes();
+            setupEventListeners();
+            setupDropdowns();
+            setupAutocomplete();
+        });
+
+        // Настройка выпадающих списков
+        function setupDropdowns() {
+            // Категории
+            const categoryDropdown = document.getElementById('categoryDropdown');
+            const categorySelect = document.getElementById('categorySelect');
+            const categoryOptions = document.getElementById('categoryOptions');
+
+            categorySelect.addEventListener('click', function() {
+                categoryOptions.classList.toggle('show');
+                categorySelect.classList.toggle('active');
+            });
+
+            categoryOptions.addEventListener('click', function(e) {
+                if (e.target.classList.contains('dropdown-option')) {
+                    const value = e.target.dataset.value;
+                    const text = e.target.textContent;
+                    
+                    categorySelect.querySelector('span:first-child').textContent = text;
+                    categoryOptions.classList.remove('show');
+                    categorySelect.classList.remove('active');
+                    
+                    currentFilters.category = value;
+                    renderRecipes();
+                }
+            });
+
+            // Время приготовления
+            const timeDropdown = document.getElementById('timeDropdown');
+            const timeSelect = document.getElementById('timeSelect');
+            const timeOptions = document.getElementById('timeOptions');
+
+            timeSelect.addEventListener('click', function() {
+                timeOptions.classList.toggle('show');
+                timeSelect.classList.toggle('active');
+            });
+
+            timeOptions.addEventListener('click', function(e) {
+                if (e.target.classList.contains('dropdown-option')) {
+                    const value = e.target.dataset.value;
+                    const text = e.target.textContent;
+                    
+                    timeSelect.querySelector('span:first-child').textContent = text;
+                    timeOptions.classList.remove('show');
+                    timeSelect.classList.remove('active');
+                    
+                    currentFilters.time = value;
+                    renderRecipes();
+                }
+            });
+
+            // Закрытие выпадающих списков при клике вне их
+            document.addEventListener('click', function(e) {
+                if (!categoryDropdown.contains(e.target)) {
+                    categoryOptions.classList.remove('show');
+                    categorySelect.classList.remove('active');
+                }
+                if (!timeDropdown.contains(e.target)) {
+                    timeOptions.classList.remove('show');
+                    timeSelect.classList.remove('active');
+                }
+            });
+        }
+
+        // Настройка автодополнения
+        function setupAutocomplete() {
+            const cuisineInput = document.getElementById('cuisineInput');
+            const cuisineResults = document.getElementById('cuisineResults');
+            const ingredientsInput = document.getElementById('ingredientsInput');
+            const ingredientsResults = document.getElementById('ingredientsResults');
+
+            // Автодополнение для кухни
+            cuisineInput.addEventListener('input', function(e) {
+                const value = e.target.value.toLowerCase();
+                cuisineResults.innerHTML = '';
+
+                if (value.length > 1) {
+                    const matches = cuisines.filter(cuisine => 
+                        cuisine.toLowerCase().includes(value)
+                    );
+
+                    if (matches.length > 0) {
+                        cuisineResults.classList.add('show');
+                        matches.forEach(match => {
+                            const div = document.createElement('div');
+                            div.className = 'autocomplete-result';
+                            div.textContent = match;
+                            div.addEventListener('click', function() {
+                                cuisineInput.value = match;
+                                cuisineResults.classList.remove('show');
+                                currentFilters.cuisine = match;
+                                renderRecipes();
+                            });
+                            cuisineResults.appendChild(div);
+                        });
+                    } else {
+                        cuisineResults.classList.remove('show');
+                    }
+                } else {
+                    cuisineResults.classList.remove('show');
+                }
+            });
+
+            // Автодополнение для ингредиентов
+            ingredientsInput.addEventListener('input', function(e) {
+                const value = e.target.value.toLowerCase();
+                ingredientsResults.innerHTML = '';
+
+                if (value.length > 1) {
+                    const matches = allIngredients.filter(ingredient => 
+                        ingredient.toLowerCase().includes(value) && 
+                        !selectedIngredients.includes(ingredient)
+                    );
+
+                    if (matches.length > 0) {
+                        ingredientsResults.classList.add('show');
+                        matches.forEach(match => {
+                            const div = document.createElement('div');
+                            div.className = 'autocomplete-result';
+                            div.textContent = match;
+                            div.addEventListener('click', function() {
+                                addIngredient(match);
+                                ingredientsInput.value = '';
+                                ingredientsResults.classList.remove('show');
+                            });
+                            ingredientsResults.appendChild(div);
+                        });
+                    } else {
+                        ingredientsResults.classList.remove('show');
+                    }
+                } else {
+                    ingredientsResults.classList.remove('show');
+                }
+            });
+
+            // Закрытие автодополнения при клике вне
+            document.addEventListener('click', function(e) {
+                if (!cuisineInput.contains(e.target)) {
+                    cuisineResults.classList.remove('show');
+                }
+                if (!ingredientsInput.contains(e.target)) {
+                    ingredientsResults.classList.remove('show');
+                }
+            });
+        }
+
+        // Настройка обработчиков событий
+        function setupEventListeners() {
+            // Тумблер ингредиентов
+            document.getElementById('ingredientsToggle').addEventListener('change', function(e) {
+                currentFilters.hasIngredients = e.target.checked;
+                renderRecipes();
+            });
+
+            // Ввод ингредиентов по Enter
+            document.getElementById('ingredientsInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && this.value.trim()) {
+                    addIngredient(this.value.trim());
+                    this.value = '';
+                    document.getElementById('ingredientsResults').classList.remove('show');
+                }
+            });
+        }
+
+        // Добавление ингредиента
+        function addIngredient(ingredient) {
+            if (ingredient && !selectedIngredients.includes(ingredient)) {
+                selectedIngredients.push(ingredient);
+                currentFilters.ingredients = selectedIngredients;
+                renderSelectedIngredients();
+                renderRecipes();
+            }
+        }
+
+        // Удаление ингредиента
+        function removeIngredient(ingredient) {
+            selectedIngredients = selectedIngredients.filter(item => item !== ingredient);
+            currentFilters.ingredients = selectedIngredients;
+            renderSelectedIngredients();
+            renderRecipes();
+        }
+
+        // Отображение выбранных ингредиентов
+        function renderSelectedIngredients() {
+            const container = document.getElementById('selectedIngredients');
+            container.innerHTML = selectedIngredients.map(ingredient => `
+                <div class="ingredient-tag">
+                    ${ingredient}
+                    <button class="remove-ingredient" onclick="removeIngredient('${ingredient}')">×</button>
+                </div>
+            `).join('');
+        }
+
+        // Отображение карточек рецептов
+        function renderRecipes() {
+            const grid = document.getElementById('recipesGrid');
+            const filteredRecipes = filterRecipes();
+            
+            if (filteredRecipes.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <h3>Рецепты не найдены</h3>
+                        <p>Попробуйте изменить параметры фильтрации</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = filteredRecipes.map(recipe => `
+                <div class="recipe-card" data-id="${recipe.id}">
+                    <img src="${recipe.image}" alt="${recipe.title}" class="recipe-image">
+                    <div class="recipe-content">
+                        <div class="recipe-header">
+                            <h3 class="recipe-title">${recipe.title}</h3>
+                            <button class="favorite-btn ${recipe.isFavorite ? 'active' : ''}" 
+                                    onclick="toggleFavorite(${recipe.id})">
+                                ${recipe.isFavorite ? '★' : '☆'}
+                            </button>
+                        </div>
+                        <div class="recipe-meta">
+                            <span>⏱ ${recipe.time}</span>
+                            <span>${recipe.difficulty}</span>
+                            <span>${recipe.cuisine}</span>
+                        </div>
+                        <p class="recipe-description">${recipe.description}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Фильтрация рецептов
+        function filterRecipes() {
+            return recipes.filter(recipe => {
+                // Фильтр по категории
+                if (currentFilters.category !== 'all' && recipe.category !== currentFilters.category) {
+                    return false;
+                }
+
+                // Фильтр по кухне
+                if (currentFilters.cuisine && !recipe.cuisine.includes(currentFilters.cuisine)) {
+                    return false;
+                }
+
+                // Фильтр по времени
+                if (currentFilters.time !== 'all') {
+                    const time = parseInt(recipe.time);
+                    if (currentFilters.time === 'quick' && time > 30) return false;
+                    if (currentFilters.time === 'medium' && (time <= 30 || time > 60)) return false;
+                    if (currentFilters.time === 'long' && time <= 60) return false;
+                }
+
+                // Фильтр по ингредиентам
+                if (currentFilters.hasIngredients && currentFilters.ingredients.length > 0) {
+                    const hasIngredients = currentFilters.ingredients.every(ingredient => 
+                        recipe.ingredients.includes(ingredient)
+                    );
+                    if (!hasIngredients) return false;
+                }
+
+                return true;
+            });
+        }
+
+        // Переключение избранного
+        function toggleFavorite(recipeId) {
+            const recipe = recipes.find(r => r.id === recipeId);
+            if (recipe) {
+                recipe.isFavorite = !recipe.isFavorite;
+                renderRecipes();
+            }
+        }
+    </script>
+</body>
+</html>
