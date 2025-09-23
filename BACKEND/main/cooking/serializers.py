@@ -1,5 +1,15 @@
 from rest_framework import serializers
-from .models import Dish, Ingredient, DishIngredient
+from .models import Dish, Ingredient, DishIngredient, Category, Type
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ['id','name']
+
+class TypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Type
+        fields = ['id','name']
 
 class DishUpdateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -64,11 +74,15 @@ class DishSerializer(serializers.ModelSerializer):
         ]
 
     def get_ingredients(self, obj):
-        # Получаем все ингредиенты блюда
         dish_ingredients = obj.dishingredient_set.select_related('ingredient').all()
         
         ingredients = []
         for dish_ingredient in dish_ingredients:
-            ingredients.append(dish_ingredient.ingredient.name)
+            # Убираем лишние пробелы и добавляем пробел между числом и единицей измерения
+            quantity = dish_ingredient.quantity.strip()
+            ingredient_name = dish_ingredient.ingredient.name.strip()
+            
+            ingredient_with_quantity = f"{ingredient_name} {quantity}"
+            ingredients.append(ingredient_with_quantity)
         
         return ingredients

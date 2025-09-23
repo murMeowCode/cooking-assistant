@@ -1,15 +1,25 @@
 from rest_framework.generics import ListAPIView, UpdateAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import Dish
-from .serializers import DishSerializer, DishUpdateSerializer, ElasticDishSerializer
+from .models import Dish, Category, Type
+from .serializers import CategorySerializer, DishSerializer, DishUpdateSerializer, ElasticDishSerializer, TypeSerializer
 from django.db.models import Count, F, Q
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.pagination import PageNumberPagination
 
 class CustomPagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = 'page_size'
     max_page_size = 10
+
+class CategoryList(ListAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
+class TypeList(ListAPIView):
+    queryset = Type.objects.all()
+    serializer_class = TypeSerializer
 
 class StarredDishView(ListAPIView):
     queryset = Dish.objects.filter(starred=True)
@@ -23,16 +33,47 @@ class StarredUpdateView(UpdateAPIView):
 class AllDishListView(ListAPIView):
     queryset = Dish.objects.all()
     serializer_class = DishSerializer
-    filterset_fields = ['category__name']
-    search_fields = ['title', 'description', 'instructions', 'ingredients__ingredient__name']
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    
+    # Фильтрация по точным значениям
+    filterset_fields = ['category__name', 'type__name']
+    
+    # Поиск по частичному совпадению в title
+    search_fields = ['title']
+    
+    # Сортировка
     ordering_fields = ['title', 'cooktime']
     ordering = ['title']
 
     def get_queryset(self):
         queryset = super().get_queryset()
+        
+        # Фильтрация по категории (точное совпадение)
         category = self.request.query_params.get('category')
         if category:
             queryset = queryset.filter(category__name=category)
+        
+        # Фильтрация по типу (точное совпадение)
+        dish_type = self.request.query_params.get('type')
+        if dish_type:
+            queryset = queryset.filter(type__name=dish_type)
+        
+        # Фильтрация по диапазону cooktime
+        cooktime_min = self.request.query_params.get('cooktime_min')
+        cooktime_max = self.request.query_params.get('cooktime_max')
+        
+        if cooktime_min and cooktime_max:
+            queryset = queryset.filter(cooktime__gte=cooktime_min, cooktime__lte=cooktime_max)
+        elif cooktime_min:
+            queryset = queryset.filter(cooktime__gte=cooktime_min)
+        elif cooktime_max:
+            queryset = queryset.filter(cooktime__lte=cooktime_max)
+        
+        # Фильтрация по частичному совпадению в title (альтернативный вариант)
+        title_search = self.request.query_params.get('title')
+        if title_search:
+            queryset = queryset.filter(title__icontains=title_search)
+        
         return queryset
     
 
